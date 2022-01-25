@@ -137,6 +137,7 @@ namespace OpenHardwareMonitor.GUI {
           DpiHelper.LogicalToDeviceUnits(800),
           settings.GetValue("treeView.Columns." + column.Header + ".Width",
           column.Width)));
+      
 
 #if false // org
       treeModel = new TreeModel();
@@ -150,11 +151,16 @@ namespace OpenHardwareMonitor.GUI {
       root = new Node(System.Environment.MachineName);
       root.Image = Utilities.EmbeddedResources.GetImage("computer.png");
 
+
+
       SBC_Pulse = new Node("STATUS");
       SBC_Pulse.Image = Utilities.EmbeddedResources.GetImage("pulse.png");
 
-      USB_Comp = new Node("USB");
-      USB_Comp.Image = Utilities.EmbeddedResources.GetImage("usb.png");
+      BATTERY_Comp = new Node("BATTERY");
+      BATTERY_Comp.Image = Utilities.EmbeddedResources.GetImage("battery.png");
+
+      IPMI_Comp = new Node("IPMI");
+      IPMI_Comp.Image = Utilities.EmbeddedResources.GetImage("battery2.png");
 
       NET_Comp = new Node("NETWORK");
       NET_Comp.Image = Utilities.EmbeddedResources.GetImage("ether.png");
@@ -165,20 +171,18 @@ namespace OpenHardwareMonitor.GUI {
       HDMI_Comp = new Node("HDMI");
       HDMI_Comp.Image = Utilities.EmbeddedResources.GetImage("hdmi.png");
 
-      IPMI_Comp = new Node("IPMI");
-      IPMI_Comp.Image = Utilities.EmbeddedResources.GetImage("b_2.png");
+      USB_Comp = new Node("USB");
+      USB_Comp.Image = Utilities.EmbeddedResources.GetImage("usb.png");
 
-      BATTERY_Comp = new Node("BATTERY");
-      BATTERY_Comp.Image = Utilities.EmbeddedResources.GetImage("battery.png");
 
       treeModel.Nodes.Add(root);
       treeModel.Nodes.Add(SBC_Pulse);
-      treeModel.Nodes.Add(USB_Comp);
+      treeModel.Nodes.Add(BATTERY_Comp);
+      treeModel.Nodes.Add(IPMI_Comp);
       treeModel.Nodes.Add(NET_Comp);
       treeModel.Nodes.Add(COM_Comp);
       treeModel.Nodes.Add(HDMI_Comp);
-      treeModel.Nodes.Add(IPMI_Comp);
-      treeModel.Nodes.Add(BATTERY_Comp);
+      treeModel.Nodes.Add(USB_Comp);
       treeView.Model = treeModel;
 #endif
 
@@ -982,6 +986,10 @@ namespace OpenHardwareMonitor.GUI {
 
     private void serverPortMenuItem_Click(object sender, EventArgs e) {
       new PortForm(this).ShowDialog();
+    }
+
+    private void COMPortMenuItem_Click(object sender, EventArgs e) {
+      new SerialForm(this).ShowDialog();
     }
 
     public HttpServer Server {

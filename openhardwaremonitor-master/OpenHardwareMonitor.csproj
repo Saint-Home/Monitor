@@ -71,6 +71,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Management" />
     <Reference Include="System.Windows.Forms" />
@@ -112,6 +113,12 @@
     </Compile>
     <Compile Include="GUI\SensorGadget.cs" />
     <Compile Include="GUI\SensorNotifyIcon.cs" />
+    <Compile Include="GUI\SerialForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\SerialForm.Designer.cs">
+      <DependentUpon>SerialForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\ShowDesktop.cs" />
     <Compile Include="GUI\SplitContainerAdv.cs">
       <SubType>Component</SubType>
@@ -162,6 +169,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\PortForm.resx">
       <DependentUpon>PortForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\SerialForm.resx">
+      <DependentUpon>SerialForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\ati.png">
     </EmbeddedResource>
@@ -310,15 +320,16 @@
     <EmbeddedResource Include="Resources\throughput.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\battery.png" />
-    <Content Include="Resources\b_2.png" />
-    <Content Include="Resources\com.png" />
-    <Content Include="Resources\ether.png" />
-    <Content Include="Resources\hdmi.png" />
+    <EmbeddedResource Include="Resources\pulse.png" />
+    <EmbeddedResource Include="Resources\battery.png" />
+    <EmbeddedResource Include="Resources\battery2.png" />
+    <EmbeddedResource Include="Resources\com.png" />
+    <EmbeddedResource Include="Resources\ether.png" />
+    <EmbeddedResource Include="Resources\hdmi.png" />
+    <EmbeddedResource Include="Resources\IPMP.png" />
     <Content Include="Resources\memory.png" />
-    <Content Include="Resources\pulse.png" />
-    <Content Include="Resources\usb.png" />
-    <Content Include="Resources\_hdmi.png" />
+    <EmbeddedResource Include="Resources\usb.png" />
+    <EmbeddedResource Include="Resources\_hdmi.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

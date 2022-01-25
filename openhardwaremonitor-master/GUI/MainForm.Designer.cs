@@ -108,6 +108,8 @@ namespace OpenHardwareMonitor.GUI {
             this.webMenuItem = new System.Windows.Forms.MenuItem();
             this.runWebServerMenuItem = new System.Windows.Forms.MenuItem();
             this.serverPortMenuItem = new System.Windows.Forms.MenuItem();
+            this.interfaceMenuItem = new System.Windows.Forms.MenuItem();
+            this.COMPortMenuItem = new System.Windows.Forms.MenuItem();
             this.helpMenuItem = new System.Windows.Forms.MenuItem();
             this.aboutMenuItem = new System.Windows.Forms.MenuItem();
             this.treeContextMenu = new System.Windows.Forms.ContextMenu();
@@ -206,9 +208,8 @@ namespace OpenHardwareMonitor.GUI {
             this.nodeTextBoxMax.ParentColumn = this.max;
             this.nodeTextBoxMax.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
             this.nodeTextBoxMax.UseCompatibleTextRendering = true;
-
             // 
-            // nodeTextBoxMax
+            // nodeTextBoxStatus
             // 
             this.nodeTextBoxStatus.DataPropertyName = "Status";
             this.nodeTextBoxStatus.IncrementalSearchEnabled = true;
@@ -216,9 +217,8 @@ namespace OpenHardwareMonitor.GUI {
             this.nodeTextBoxStatus.ParentColumn = this.max;
             this.nodeTextBoxStatus.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
             this.nodeTextBoxStatus.UseCompatibleTextRendering = true;
-
             // 
-            // nodeTextBoxMax
+            // nodeTextBoxBit
             // 
             this.nodeTextBoxBit.DataPropertyName = "Bit";
             this.nodeTextBoxBit.IncrementalSearchEnabled = true;
@@ -407,7 +407,8 @@ namespace OpenHardwareMonitor.GUI {
             this.logSensorsMenuItem,
             this.loggingIntervalMenuItem,
             this.webMenuItemSeparator,
-            this.webMenuItem});
+            this.webMenuItem,
+            this.interfaceMenuItem});
             this.optionsMenuItem.Text = "Options";
             // 
             // startMinMenuItem
@@ -615,6 +616,19 @@ namespace OpenHardwareMonitor.GUI {
             this.serverPortMenuItem.Text = "Port";
             this.serverPortMenuItem.Click += new System.EventHandler(this.serverPortMenuItem_Click);
             // 
+            // interfaceMenuItem
+            // 
+            this.interfaceMenuItem.Index = 12;
+            this.interfaceMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.COMPortMenuItem});
+            this.interfaceMenuItem.Text = "Interface";
+            // 
+            // COMPortMenuItem
+            // 
+            this.COMPortMenuItem.Index = 0;
+            this.COMPortMenuItem.Text = "COM";
+            this.COMPortMenuItem.Click += new System.EventHandler(this.COMPortMenuItem_Click);
+            // 
             // helpMenuItem
             // 
             this.helpMenuItem.Index = 3;
@@ -699,20 +713,18 @@ namespace OpenHardwareMonitor.GUI {
             this.treeView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseDown);
             this.treeView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseMove);
             this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseUp);
-
-
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(488, 490);
+            this.ClientSize = new System.Drawing.Size(488, 469);
             this.Controls.Add(this.splitContainer);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Menu = this.mainMenu;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "Monitor";
+            this.Text = "KVLS2 Monitor";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.ResizeEnd += new System.EventHandler(this.MainForm_MoveOrResize);
@@ -781,9 +793,11 @@ namespace OpenHardwareMonitor.GUI {
     private System.Windows.Forms.MenuItem plotWindowMenuItem;
     private System.Windows.Forms.MenuItem plotBottomMenuItem;
     private System.Windows.Forms.MenuItem plotRightMenuItem;
-		private System.Windows.Forms.MenuItem webMenuItem;
+    private System.Windows.Forms.MenuItem webMenuItem;
+    private System.Windows.Forms.MenuItem interfaceMenuItem;
     private System.Windows.Forms.MenuItem runWebServerMenuItem;
     private System.Windows.Forms.MenuItem serverPortMenuItem;
+    private System.Windows.Forms.MenuItem COMPortMenuItem;
     private System.Windows.Forms.MenuItem menuItem5;
     private System.Windows.Forms.MenuItem mainboardMenuItem;
     private System.Windows.Forms.MenuItem cpuMenuItem;
