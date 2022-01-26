@@ -103,9 +103,7 @@ namespace Aga.Controls.Tree
                 if (rowRect.Y + y > displayRect.Bottom)
                     break;
                 else
-                {
                     DrawRow(e, ref context, row, rowRect);
-                }
             }
 
 			if ((GridLineStyle & GridLineStyle.Vertical) == GridLineStyle.Vertical && UseColumns)

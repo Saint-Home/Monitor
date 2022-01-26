@@ -214,7 +214,7 @@ namespace OpenHardwareMonitor.GUI {
             this.nodeTextBoxStatus.DataPropertyName = "Status";
             this.nodeTextBoxStatus.IncrementalSearchEnabled = true;
             this.nodeTextBoxStatus.LeftMargin = 3;
-            this.nodeTextBoxStatus.ParentColumn = this.max;
+            this.nodeTextBoxStatus.ParentColumn = this.status;
             this.nodeTextBoxStatus.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
             this.nodeTextBoxStatus.UseCompatibleTextRendering = true;
             // 
@@ -223,7 +223,7 @@ namespace OpenHardwareMonitor.GUI {
             this.nodeTextBoxBit.DataPropertyName = "Bit";
             this.nodeTextBoxBit.IncrementalSearchEnabled = true;
             this.nodeTextBoxBit.LeftMargin = 3;
-            this.nodeTextBoxBit.ParentColumn = this.max;
+            this.nodeTextBoxBit.ParentColumn = this.bit;
             this.nodeTextBoxBit.Trimming = System.Drawing.StringTrimming.EllipsisCharacter;
             this.nodeTextBoxBit.UseCompatibleTextRendering = true;
             // 
@@ -718,7 +718,7 @@ namespace OpenHardwareMonitor.GUI {
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(488, 469);
+            this.ClientSize = new System.Drawing.Size(488, 459);
             this.Controls.Add(this.splitContainer);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Menu = this.mainMenu;

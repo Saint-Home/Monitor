@@ -59,6 +59,9 @@ namespace OpenHardwareMonitor.GUI {
           case HardwareType.RAM:
             image = Utilities.EmbeddedResources.GetImage("ram.png");
             break;
+          case HardwareType.PULSE:
+            image = Utilities.EmbeddedResources.GetImage("pulse.png");
+            break;
           default:
             image = new Bitmap(1, 1);
             break;

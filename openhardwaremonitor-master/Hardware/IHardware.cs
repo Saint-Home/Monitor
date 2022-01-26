@@ -22,7 +22,7 @@ namespace OpenHardwareMonitor.Hardware {
     TBalancer,
     Heatmaster,
     HDD,
-    Pulse,
+    PULSE
   }
 
   public interface IHardware : IElement {

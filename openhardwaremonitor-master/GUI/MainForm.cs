@@ -150,10 +150,9 @@ namespace OpenHardwareMonitor.GUI {
       treeModel = new TreeModel();
       root = new Node(System.Environment.MachineName);
       root.Image = Utilities.EmbeddedResources.GetImage("computer.png");
+      
 
-
-
-      SBC_Pulse = new Node("STATUS");
+      SBC_Pulse = new Node("PULSE");
       SBC_Pulse.Image = Utilities.EmbeddedResources.GetImage("pulse.png");
 
       BATTERY_Comp = new Node("BATTERY");
@@ -173,8 +172,9 @@ namespace OpenHardwareMonitor.GUI {
 
       USB_Comp = new Node("USB");
       USB_Comp.Image = Utilities.EmbeddedResources.GetImage("usb.png");
-
-
+      //USB_Comp.Nodes.Insert(1, COM_Comp);
+      //USB_Comp.Nodes.Add(HDMI_Comp);
+        
       treeModel.Nodes.Add(root);
       treeModel.Nodes.Add(SBC_Pulse);
       treeModel.Nodes.Add(BATTERY_Comp);
@@ -184,6 +184,10 @@ namespace OpenHardwareMonitor.GUI {
       treeModel.Nodes.Add(HDMI_Comp);
       treeModel.Nodes.Add(USB_Comp);
       treeView.Model = treeModel;
+
+
+
+        
 #endif
 
       this.computer = new Computer(settings);
@@ -234,9 +238,8 @@ namespace OpenHardwareMonitor.GUI {
       
       computer.HardwareAdded += new HardwareEventHandler(HardwareAdded);
       computer.HardwareRemoved += new HardwareEventHandler(HardwareRemoved);
-      
 
-   
+
       computer.Open();
 
    
@@ -652,7 +655,33 @@ namespace OpenHardwareMonitor.GUI {
 
       if (delayCount < 4)
         delayCount++;
+      // Add user
+
+      update_Comport(USB_Comp);
     }
+
+    private void update_Comport(Node parent) {
+      List<string> comport = new List<string>();
+      comport = GetSerialPorts();
+
+      foreach (var port in comport) {
+        //Console.WriteLine(port);
+        parent.Nodes.Add(new Node(port));
+      }
+
+    }
+    public List<string> GetSerialPorts() {
+      List<string> portNames = new List<string>();
+      string[] port = System.IO.Ports.SerialPort.GetPortNames();
+
+      foreach (string portName in port) {
+        portNames.Add(portName);
+      }
+
+      portNames.Sort();
+      return portNames;
+    }
+
 
     private void SaveConfiguration() {
       if (settings == null)
