@@ -75,6 +75,8 @@ namespace OpenHardwareMonitor.GUI {
             this.valueMenuItem = new System.Windows.Forms.MenuItem();
             this.minMenuItem = new System.Windows.Forms.MenuItem();
             this.maxMenuItem = new System.Windows.Forms.MenuItem();
+            this.menuItem4 = new System.Windows.Forms.MenuItem();
+            this.menuItem7 = new System.Windows.Forms.MenuItem();
             this.optionsMenuItem = new System.Windows.Forms.MenuItem();
             this.startMinMenuItem = new System.Windows.Forms.MenuItem();
             this.minTrayMenuItem = new System.Windows.Forms.MenuItem();
@@ -334,8 +336,11 @@ namespace OpenHardwareMonitor.GUI {
             this.plotMenuItem,
             this.gadgetMenuItem,
             this.MenuItem1,
-            this.columnsMenuItem});
-            this.viewMenuItem.Text = "View";
+            this.columnsMenuItem,
+            this.menuItem4,
+            this.menuItem7});
+            this.viewMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlV;
+            this.viewMenuItem.Text = "&View";
             // 
             // resetMinMaxMenuItem
             // 
@@ -391,6 +396,20 @@ namespace OpenHardwareMonitor.GUI {
             // 
             this.maxMenuItem.Index = 2;
             this.maxMenuItem.Text = "Max";
+            // 
+            // menuItem4
+            // 
+            this.menuItem4.Index = 7;
+            this.menuItem4.Shortcut = System.Windows.Forms.Shortcut.CtrlE;
+            this.menuItem4.Text = "Expand";
+            this.menuItem4.Click += new System.EventHandler(this.menuItem4_Click);
+            // 
+            // menuItem7
+            // 
+            this.menuItem7.Index = 8;
+            this.menuItem7.Shortcut = System.Windows.Forms.Shortcut.CtrlC;
+            this.menuItem7.Text = "Contract";
+            this.menuItem7.Click += new System.EventHandler(this.menuItem7_Click);
             // 
             // optionsMenuItem
             // 
@@ -718,7 +737,7 @@ namespace OpenHardwareMonitor.GUI {
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(488, 459);
+            this.ClientSize = new System.Drawing.Size(488, 438);
             this.Controls.Add(this.splitContainer);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Menu = this.mainMenu;
@@ -820,6 +839,8 @@ namespace OpenHardwareMonitor.GUI {
     private System.Windows.Forms.MenuItem log1hMenuItem;
     private System.Windows.Forms.MenuItem log2hMenuItem;
     private System.Windows.Forms.MenuItem log6hMenuItem;
+    private System.Windows.Forms.MenuItem menuItem4;
+    private System.Windows.Forms.MenuItem menuItem7;
   }
 }
 

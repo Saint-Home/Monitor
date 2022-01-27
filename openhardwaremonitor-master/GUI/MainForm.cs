@@ -23,6 +23,7 @@ using Aga.Controls.Tree.NodeControls;
 using OpenHardwareMonitor.Hardware;
 using OpenHardwareMonitor.WMI;
 using OpenHardwareMonitor.Utilities;
+using System.Management;
 
 namespace OpenHardwareMonitor.GUI {
   public partial class MainForm : Form {
@@ -40,7 +41,6 @@ namespace OpenHardwareMonitor.GUI {
     private Node BATTERY_Comp;
 
     private TreeModel treeModel;
-    private TreeModel statusModel;
     private IDictionary<ISensor, Color> sensorPlotColors = 
       new Dictionary<ISensor, Color>();
     private Color[] plotColorPalette;
@@ -150,8 +150,9 @@ namespace OpenHardwareMonitor.GUI {
       treeModel = new TreeModel();
       root = new Node(System.Environment.MachineName);
       root.Image = Utilities.EmbeddedResources.GetImage("computer.png");
-      
 
+
+  
       SBC_Pulse = new Node("PULSE");
       SBC_Pulse.Image = Utilities.EmbeddedResources.GetImage("pulse.png");
 
@@ -174,20 +175,24 @@ namespace OpenHardwareMonitor.GUI {
       USB_Comp.Image = Utilities.EmbeddedResources.GetImage("usb.png");
       //USB_Comp.Nodes.Insert(1, COM_Comp);
       //USB_Comp.Nodes.Add(HDMI_Comp);
-        
+
+      root.Nodes.Add(SBC_Pulse);
+      root.Nodes.Add(BATTERY_Comp);
+      root.Nodes.Add(IPMI_Comp);
+      root.Nodes.Add(NET_Comp);
+      root.Nodes.Add(COM_Comp);
+      root.Nodes.Add(HDMI_Comp);
+      root.Nodes.Add(USB_Comp);
+
+      
       treeModel.Nodes.Add(root);
-      treeModel.Nodes.Add(SBC_Pulse);
-      treeModel.Nodes.Add(BATTERY_Comp);
-      treeModel.Nodes.Add(IPMI_Comp);
-      treeModel.Nodes.Add(NET_Comp);
-      treeModel.Nodes.Add(COM_Comp);
-      treeModel.Nodes.Add(HDMI_Comp);
-      treeModel.Nodes.Add(USB_Comp);
       treeView.Model = treeModel;
 
+      
 
 
-        
+
+
 #endif
 
       this.computer = new Computer(settings);
@@ -235,6 +240,7 @@ namespace OpenHardwareMonitor.GUI {
       plotColorPalette[10] = Color.MediumSeaGreen;
       plotColorPalette[11] = Color.Olive;
       plotColorPalette[12] = Color.Firebrick;
+
       
       computer.HardwareAdded += new HardwareEventHandler(HardwareAdded);
       computer.HardwareRemoved += new HardwareEventHandler(HardwareRemoved);
@@ -242,8 +248,8 @@ namespace OpenHardwareMonitor.GUI {
 
       computer.Open();
 
-   
-      
+
+
 
       Microsoft.Win32.SystemEvents.PowerModeChanged += PowerModeChanged;
 
@@ -638,6 +644,7 @@ namespace OpenHardwareMonitor.GUI {
     }
 
     private int delayCount = 0;
+    private int count = 0;
     private void timer_Tick(object sender, EventArgs e) {
       computer.Accept(updateVisitor);
       treeView.Invalidate();
@@ -658,14 +665,40 @@ namespace OpenHardwareMonitor.GUI {
       // Add user
 
       update_Comport(USB_Comp);
+      
+      
+      Screen[] sc = Screen.AllScreens;
+      Console.WriteLine("HDMI STATE : {0}", IsActive_HDMI());
+
+    }
+    /// <summary>
+    /// HDMI DEVICE 연결 유무 
+    /// </summary>
+    /// <returns></returns>
+    private Boolean IsActive_HDMI() {
+
+      Boolean result = false;
+      var query = "select * from WmiMonitorBasicDisplayParams";
+
+      using (var wmiSearcher = new ManagementObjectSearcher("\\root\\wmi", query)) {
+        var results = wmiSearcher.Get();
+        foreach (ManagementObject wmiObj in results) {
+          // get the "Active" property and cast to a boolean, which should 
+          // tell us if the display is active. I've interpreted this to mean "on"
+          var active = (Boolean)wmiObj["Active"];
+          result = (Boolean)active;
+        }
+      }
+      return result;
     }
 
+
     private void update_Comport(Node parent) {
+      USB_Comp.Nodes.Clear();
       List<string> comport = new List<string>();
       comport = GetSerialPorts();
 
       foreach (var port in comport) {
-        //Console.WriteLine(port);
         parent.Nodes.Add(new Node(port));
       }
 
@@ -1023,6 +1056,14 @@ namespace OpenHardwareMonitor.GUI {
 
     public HttpServer Server {
       get { return server; }
+    }
+
+    private void menuItem4_Click(object sender, EventArgs e) {
+      treeView.ExpandAll();
+    }
+
+    private void menuItem7_Click(object sender, EventArgs e) {
+      treeView.CollapseAll();
     }
 
   }
