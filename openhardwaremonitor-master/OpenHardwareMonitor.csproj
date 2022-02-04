@@ -78,6 +78,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GUI\DEVICE_BIT.cs" />
     <Compile Include="GUI\DpiHelper.cs" />
     <Compile Include="GUI\GadgetWindow.cs" />
     <Compile Include="GUI\Gadget.cs" />

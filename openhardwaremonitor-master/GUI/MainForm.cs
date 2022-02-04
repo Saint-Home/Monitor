@@ -24,9 +24,12 @@ using OpenHardwareMonitor.Hardware;
 using OpenHardwareMonitor.WMI;
 using OpenHardwareMonitor.Utilities;
 using System.Management;
+using System.Text.RegularExpressions;
 
 namespace OpenHardwareMonitor.GUI {
   public partial class MainForm : Form {
+
+    DEVICE_BIT device = new DEVICE_BIT();
 
     private PersistentSettings settings;
     private UnitManager unitManager;
@@ -165,14 +168,15 @@ namespace OpenHardwareMonitor.GUI {
       NET_Comp = new Node("NETWORK");
       NET_Comp.Image = Utilities.EmbeddedResources.GetImage("ether.png");
 
-      COM_Comp = new Node("COM");
-      COM_Comp.Image = Utilities.EmbeddedResources.GetImage("com.png");
-
       HDMI_Comp = new Node("HDMI");
       HDMI_Comp.Image = Utilities.EmbeddedResources.GetImage("hdmi.png");
 
       USB_Comp = new Node("USB");
       USB_Comp.Image = Utilities.EmbeddedResources.GetImage("usb.png");
+
+      COM_Comp = new Node("COM");
+      COM_Comp.Image = Utilities.EmbeddedResources.GetImage("com.png");
+
       //USB_Comp.Nodes.Insert(1, COM_Comp);
       //USB_Comp.Nodes.Add(HDMI_Comp);
 
@@ -189,9 +193,6 @@ namespace OpenHardwareMonitor.GUI {
       treeView.Model = treeModel;
 
       
-
-
-
 
 #endif
 
@@ -222,6 +223,7 @@ namespace OpenHardwareMonitor.GUI {
         gadget.HideShowCommand += hideShowClick;
 
         wmiProvider = new WmiProvider(computer);
+        
       }
 
       logger = new Logger(computer);
@@ -662,15 +664,160 @@ namespace OpenHardwareMonitor.GUI {
 
       if (delayCount < 4)
         delayCount++;
+
       // Add user
 
-      update_Comport(USB_Comp);
-      
-      
-      Screen[] sc = Screen.AllScreens;
-      Console.WriteLine("HDMI STATE : {0}", IsActive_HDMI());
+
+      //  COM
+      getCom_Info(COM_Comp);
+
+      //  HDMI
+      device.hdmi_connect = IsActive_HDMI();
+
+      //  USB
+      getUSB_Info();
+
+      // Print
+      All_Print();
+
+
+      SelectQuery selectQuery = new SelectQuery("Win32_Battery");
+      int dIdx = 0;
+      int nIdx = 0;
+
+      string name;
+      int volume = 0;
+
+      ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(selectQuery);
+
+      foreach (ManagementObject managementObject in managementObjectSearcher.Get()) {
+
+        foreach (PropertyData propertyData in managementObject.Properties) {
+          if (propertyData.Name == "Name")
+            if (propertyData.Value != null) {
+              name = propertyData.Value.ToString();
+            }
+          //if(propertyData.Name == "DesignVoltage")
+   
+        }
+      }
+    }
+
+
+
+
+
+    private void getUSB_Info() {
+
+      SelectQuery selectQuery = new SelectQuery("Win32_USBHub");
+      int dIndex = 0;
+      int nIndex = 0;
+
+      ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(selectQuery);
+
+      foreach (ManagementObject managementObject in managementObjectSearcher.Get()) {
+
+        foreach (PropertyData propertyData in managementObject.Properties) {
+          string valueString = null;
+          string deviceName = null;
+
+
+          if (propertyData.Name == "DeviceID") {
+            if (propertyData.Value != null) {
+              valueString = propertyData.Value.ToString();
+              //Console.WriteLine("<ORG> : {0}", valueString);
+              Regex reg = new Regex(@"VID_([0-9a-f]+)&PID_([0-9a-f]+)", RegexOptions.IgnoreCase);
+
+              MatchCollection resCollection = reg.Matches(valueString);
+             
+              foreach (Match mm in resCollection) {
+                Group g = mm.Groups[1];
+                //Console.WriteLine("0 : {0}", mm.Groups[0]);
+                //Console.WriteLine("1 : {0}", mm.Groups[1]);
+                //Console.WriteLine("2 : {0}", mm.Groups[2]);
+                //Console.WriteLine("{0}:{1}", mm.Index, mm.Value);
+                device.usb_vid[dIndex] = mm.Groups[1].ToString();
+                device.usb_pid[dIndex] = mm.Groups[2].ToString();
+                dIndex++;   
+              }
+              device.usbCount = dIndex;
+            }
+          }
+          if (propertyData.Name == "Name") {
+            if (propertyData.Value != null) {
+              deviceName = propertyData.Value.ToString();
+              device.usb_name[nIndex] = deviceName;
+              nIndex++;
+            }
+          }
+
+        }
+      }
+#if false
+      for (int i = 0; i < device.usb_vid.Length; i++) {
+        if (device.usb_vid[i] != null)
+          Console.WriteLine("[USB] : Name : {0} , VID : {1} , PID : {2}",
+            device.usb_name[i].PadRight(20), device.usb_vid[i], device.usb_pid[i]);
+      }
+      Console.WriteLine();
+#endif
+    }
+
+
+    private void getCom_Info(Node parent) {
+
+      update_Comport(parent);
+
+      SelectQuery selectQuery = new SelectQuery("Win32_SerialPort");
+      int dIdx = 0;
+      int nIdx = 0;
+
+      ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(selectQuery);
+
+      foreach (ManagementObject managementObject in managementObjectSearcher.Get()) {
+
+        foreach (PropertyData propertyData in managementObject.Properties) {
+          string valueString = null;
+          string deviceName = null;
+
+          if (propertyData.Name == "PNPDeviceID") {
+            if (propertyData.Value != null) {
+              string[] sp = { "VID_", "PID_" };
+              valueString = propertyData.Value.ToString();
+
+              string vidstr = valueString.Substring(4, 8);
+              string pidstr = valueString.Substring(13, 8);
+              if (vidstr.Contains(sp[0]) || pidstr.Contains(sp[1])) {
+                device.com_vid[dIdx] = vidstr;
+                device.com_pid[dIdx] = pidstr;
+                dIdx++;
+
+              }
+            }
+          }  
+          else if (propertyData.Name == "Caption") {
+            if (propertyData.Value != null) {
+              deviceName = propertyData.Value.ToString();
+              //Console.WriteLine("ID : {0}", deviceName);
+              device.com_name[nIdx] = deviceName;
+              nIdx++;
+            }
+          }
+        }
+      }
+      device.comCount = dIdx;
+#if false
+      for (int i = 0; i < device.com_name.Length; i++) {
+        if (device.com_name[i] != null)
+          Console.WriteLine("[COM] : Name : {0} , VID : {1} , PID : {2}",
+            device.com_name[i].PadRight(20), device.com_vid[i], device.com_pid[i]);
+      }
+      Console.WriteLine();
+
+#endif
 
     }
+
     /// <summary>
     /// HDMI DEVICE 연결 유무 
     /// </summary>
@@ -694,7 +841,7 @@ namespace OpenHardwareMonitor.GUI {
 
 
     private void update_Comport(Node parent) {
-      USB_Comp.Nodes.Clear();
+      COM_Comp.Nodes.Clear();
       List<string> comport = new List<string>();
       comport = GetSerialPorts();
 
@@ -716,7 +863,30 @@ namespace OpenHardwareMonitor.GUI {
     }
 
 
-    private void SaveConfiguration() {
+    private void All_Print() {
+      Console.WriteLine("=======================================================================================");
+      //  HDMI
+      Console.WriteLine("[HDMI]");
+      Console.WriteLine("Connect : {0}\n", IsActive_HDMI() == true ? "Connection" : "Not Connection");
+
+      //  COM
+      Console.WriteLine("[COM PORT]");
+      for (int i = 0; i < device.comCount; i++) {
+        Console.WriteLine("NAME : {0} , VID : {1} , PID : {2}", device.com_name[i], device.com_vid[i], device.com_pid[i]);
+      }
+      Console.WriteLine();
+
+      //  USB
+      Console.WriteLine("[USB]");
+      for (int i = 0; i < device.usbCount; i++) {
+        Console.WriteLine("NAME : {0} , VID : {1} , PID : {2}", device.usb_name[i], device.usb_vid[i], device.usb_pid[i]);
+      }
+      Console.WriteLine();
+
+      Console.WriteLine("=======================================================================================");
+    }
+
+      private void SaveConfiguration() {
       if (settings == null)
         return;
 
