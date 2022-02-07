@@ -25,6 +25,9 @@ using OpenHardwareMonitor.WMI;
 using OpenHardwareMonitor.Utilities;
 using System.Management;
 using System.Text.RegularExpressions;
+using System.Linq;
+using System.Collections;
+using System.Text;
 
 namespace OpenHardwareMonitor.GUI {
   public partial class MainForm : Form {
@@ -682,11 +685,10 @@ namespace OpenHardwareMonitor.GUI {
 
 
       SelectQuery selectQuery = new SelectQuery("Win32_Battery");
-      int dIdx = 0;
-      int nIdx = 0;
+      //int dIdx = 0;
+      //int nIdx = 0;
 
-      string name;
-      int volume = 0;
+      //int volume = 0;
 
       ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(selectQuery);
 
@@ -695,8 +697,14 @@ namespace OpenHardwareMonitor.GUI {
         foreach (PropertyData propertyData in managementObject.Properties) {
           if (propertyData.Name == "Name")
             if (propertyData.Value != null) {
-              name = propertyData.Value.ToString();
+              device.Battery_name = propertyData.Value.ToString();           
             }
+
+          if(propertyData.Name == "DesignVoltage") {
+            device.Battery_volumes = Convert.ToInt32(propertyData.Value.ToString());
+          }
+
+          //Console.WriteLine("BAT {0} / {1}", device.Battery_name, device.Battery_volumes);
           //if(propertyData.Name == "DesignVoltage")
    
         }
@@ -708,114 +716,152 @@ namespace OpenHardwareMonitor.GUI {
 
 
     private void getUSB_Info() {
-
+#if false // Win32_USBHub
       SelectQuery selectQuery = new SelectQuery("Win32_USBHub");
-      int dIndex = 0;
-      int nIndex = 0;
-
       ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(selectQuery);
 
+      USBDictionary d = new USBDictionary();
+      string id = null;
+      string deviceName = null;
+
       foreach (ManagementObject managementObject in managementObjectSearcher.Get()) {
+        if (managementObject.Properties["DeviceID"].Value.ToString() != null) {
+          id = managementObject.Properties["DeviceID"].Value.ToString();
 
-        foreach (PropertyData propertyData in managementObject.Properties) {
-          string valueString = null;
-          string deviceName = null;
+          Regex reg = new Regex(@"VID_([0-9a-f]+)&PID_([0-9a-f]+)", RegexOptions.IgnoreCase);
+          MatchCollection resCollection = reg.Matches(id);
 
-
-          if (propertyData.Name == "DeviceID") {
-            if (propertyData.Value != null) {
-              valueString = propertyData.Value.ToString();
-              //Console.WriteLine("<ORG> : {0}", valueString);
-              Regex reg = new Regex(@"VID_([0-9a-f]+)&PID_([0-9a-f]+)", RegexOptions.IgnoreCase);
-
-              MatchCollection resCollection = reg.Matches(valueString);
-             
-              foreach (Match mm in resCollection) {
-                Group g = mm.Groups[1];
-                //Console.WriteLine("0 : {0}", mm.Groups[0]);
-                //Console.WriteLine("1 : {0}", mm.Groups[1]);
-                //Console.WriteLine("2 : {0}", mm.Groups[2]);
-                //Console.WriteLine("{0}:{1}", mm.Index, mm.Value);
-                device.usb_vid[dIndex] = mm.Groups[1].ToString();
-                device.usb_pid[dIndex] = mm.Groups[2].ToString();
-                dIndex++;   
-              }
-              device.usbCount = dIndex;
-            }
+          foreach (Match mm in resCollection) {
+            Group g = mm.Groups[1];
+            d.Vid = mm.Groups[1].ToString();
+            d.Pid = mm.Groups[2].ToString();
           }
-          if (propertyData.Name == "Name") {
-            if (propertyData.Value != null) {
-              deviceName = propertyData.Value.ToString();
-              device.usb_name[nIndex] = deviceName;
-              nIndex++;
-            }
+        }
+        if (managementObject.Properties["Name"].Value.ToString() != null) {
+          deviceName = managementObject.Properties["Name"].Value.ToString();
+        }
+        if (d.Vid != null && d.Pid != null && deviceName != null) {
+          if (!(device.usb_dic.ContainsKey(deviceName).Equals(true))) {
+            device.usb_dic.Add(deviceName, d);
           }
+        } else {
+          Console.WriteLine("null data");
+        }
+#if true
+        int count = 0;
+        foreach (KeyValuePair<string, USBDictionary> tmp in device.usb_dic) {
+          Console.WriteLine("{0} --> {1} , {2} , {3}",++count, tmp.Key, tmp.Value.Vid, tmp.Value.Pid);
+        }
+#endif
 
+      }
+#else //  Win32_USBController
+      SelectQuery selectQuery = new SelectQuery("Win32_USBController");
+      ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(selectQuery);
+
+      USBDictionary d = new USBDictionary();
+      string id = null;
+      string deviceName = null;
+
+      foreach (ManagementObject managementObject in managementObjectSearcher.Get()) {
+        if (managementObject.Properties["DeviceID"].Value.ToString() != null) {
+          id = managementObject.Properties["DeviceID"].Value.ToString();
+
+          Regex reg = new Regex(@"VEN_([0-9a-f]+)&DEV_([0-9a-f]+)", RegexOptions.IgnoreCase);
+          MatchCollection resCollection = reg.Matches(id);
+
+          foreach (Match mm in resCollection) {
+            Group g = mm.Groups[1];
+            d.Vid = mm.Groups[1].ToString();
+            d.Pid = mm.Groups[2].ToString();
+          }
+        }
+        if (managementObject.Properties["Caption"].Value.ToString() != null) {
+          deviceName = managementObject.Properties["Caption"].Value.ToString();
+          d.Name = deviceName;
+        }
+        if (d.Vid != null && d.Pid != null && deviceName != null) {
+          if (!(device.usb_dic.ContainsKey(d.Pid).Equals(true))) {
+            device.usb_dic.Add(d.Pid, d);
+          }
         }
       }
 #if false
-      for (int i = 0; i < device.usb_vid.Length; i++) {
-        if (device.usb_vid[i] != null)
-          Console.WriteLine("[USB] : Name : {0} , VID : {1} , PID : {2}",
-            device.usb_name[i].PadRight(20), device.usb_vid[i], device.usb_pid[i]);
+      foreach (KeyValuePair<string, USBDictionary> tmp in device.usb_dic) {
+        Console.WriteLine("{0} , {1} , {2}", tmp.Key, tmp.Value.Vid, tmp.Value.Name);
       }
-      Console.WriteLine();
+#endif
+
 #endif
     }
 
 
-    private void getCom_Info(Node parent) {
-
+    private void getCom_Info(Node parent)
+   {
       update_Comport(parent);
 
       SelectQuery selectQuery = new SelectQuery("Win32_SerialPort");
-      int dIdx = 0;
-      int nIdx = 0;
 
       ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(selectQuery);
 
       foreach (ManagementObject managementObject in managementObjectSearcher.Get()) {
 
-        foreach (PropertyData propertyData in managementObject.Properties) {
-          string valueString = null;
-          string deviceName = null;
+        string valueString = null;
+        string deviceName = null;
+        string vidstr = null;
+        string pidstr = null;
+        string[] sp = { "VID_", "PID_" };
 
-          if (propertyData.Name == "PNPDeviceID") {
-            if (propertyData.Value != null) {
-              string[] sp = { "VID_", "PID_" };
-              valueString = propertyData.Value.ToString();
-
-              string vidstr = valueString.Substring(4, 8);
-              string pidstr = valueString.Substring(13, 8);
-              if (vidstr.Contains(sp[0]) || pidstr.Contains(sp[1])) {
-                device.com_vid[dIdx] = vidstr;
-                device.com_pid[dIdx] = pidstr;
-                dIdx++;
-
-              }
-            }
-          }  
-          else if (propertyData.Name == "Caption") {
-            if (propertyData.Value != null) {
-              deviceName = propertyData.Value.ToString();
-              //Console.WriteLine("ID : {0}", deviceName);
-              device.com_name[nIdx] = deviceName;
-              nIdx++;
-            }
-          }
+        if (managementObject.Properties["PNPDeviceID"].Value.ToString() != null) {
+          valueString = managementObject.Properties["PNPDeviceID"].Value.ToString();
+          vidstr = valueString.Substring(4, 8);
+          pidstr = valueString.Substring(13, 8);
         }
-      }
-      device.comCount = dIdx;
-#if false
-      for (int i = 0; i < device.com_name.Length; i++) {
-        if (device.com_name[i] != null)
-          Console.WriteLine("[COM] : Name : {0} , VID : {1} , PID : {2}",
-            device.com_name[i].PadRight(20), device.com_vid[i], device.com_pid[i]);
-      }
-      Console.WriteLine();
-
+#if false // key값 떄문에 변경한다.
+        if (managementObject.Properties["Caption"].Value.ToString() != null) {
+          deviceName = managementObject.Properties["Caption"].Value.ToString();
+        }
+#else
+        if (managementObject.Properties["DeviceID"].Value.ToString() != null) {
+          deviceName = managementObject.Properties["DeviceID"].Value.ToString();
+        }
 #endif
 
+        //Console.WriteLine("{0} {1} {2}", deviceName, vidstr, pidstr);
+        ComDictionary d = new ComDictionary();
+        d.Vid = vidstr;
+        d.Pid = pidstr;
+        if (!(device.com_dic.ContainsKey(deviceName).Equals(true))) {
+          device.com_dic.Add(deviceName, d);
+        }
+      }
+#if false //debug
+      foreach (KeyValuePair<string, Dic_class> tmp in device.dic) {
+        //foreach (Dic_class NowData in device.dic.Values) {
+        //Console.WriteLine("{0} , {1}", NowData.Vid, NowData.Pid);
+        Console.WriteLine("{0} , {1} , {2}", tmp.Key, tmp.Value.Vid, tmp.Value.Pid);
+      }
+#endif
+
+
+    }
+
+    public string getComVID(string key) {
+      string res = null;
+      if (device.com_dic.ContainsKey(key)) {
+        res = device.com_dic[key].Vid;
+      }
+
+      return res;
+    }
+
+    public string getComPID(string key) {
+      string res = null;
+      if (device.com_dic.ContainsKey(key)) {
+        res = device.com_dic[key].Pid;
+      }
+
+      return res;
     }
 
     /// <summary>
@@ -864,24 +910,24 @@ namespace OpenHardwareMonitor.GUI {
 
 
     private void All_Print() {
-      Console.WriteLine("=======================================================================================");
+
       //  HDMI
       Console.WriteLine("[HDMI]");
       Console.WriteLine("Connect : {0}\n", IsActive_HDMI() == true ? "Connection" : "Not Connection");
 
       //  COM
       Console.WriteLine("[COM PORT]");
-      for (int i = 0; i < device.comCount; i++) {
-        Console.WriteLine("NAME : {0} , VID : {1} , PID : {2}", device.com_name[i], device.com_vid[i], device.com_pid[i]);
+      foreach (KeyValuePair<string, ComDictionary> tmp in device.com_dic) {
+        Console.WriteLine("{0} , {1} , {2}", tmp.Key, tmp.Value.Vid, tmp.Value.Pid);
       }
-      Console.WriteLine();
+      Console.WriteLine(Environment.NewLine);
 
       //  USB
       Console.WriteLine("[USB]");
-      for (int i = 0; i < device.usbCount; i++) {
-        Console.WriteLine("NAME : {0} , VID : {1} , PID : {2}", device.usb_name[i], device.usb_vid[i], device.usb_pid[i]);
+      foreach (KeyValuePair<string, USBDictionary> tmp in device.usb_dic) {
+        Console.WriteLine("{0} , {1} , {2}", tmp.Key, tmp.Value.Vid, tmp.Value.Name);
       }
-      Console.WriteLine();
+      Console.WriteLine(Environment.NewLine);
 
       Console.WriteLine("=======================================================================================");
     }

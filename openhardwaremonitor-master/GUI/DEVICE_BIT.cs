@@ -11,59 +11,66 @@
 */
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 
 namespace OpenHardwareMonitor.GUI {
    class DEVICE_BIT {
 
     //  USB
+#if false // old
     public string[] usb_name = new string[30];
     public string[] usb_vid = new string[30];
     public string[] usb_pid = new string[30];
     public int usbCount;
+#else
+    // 딕셔너리
+    public Dictionary<string, USBDictionary> usb_dic = new Dictionary<string, USBDictionary>();
+#endif
 
     //  HDMI
     public Boolean hdmi_connect;
 
-    public string[] com_name = new string[20];
-    public string[] com_vid = new string[20];
-    public string[] com_pid = new string[20];
-    public int comCount;
+
+    //  COM
+    public Dictionary<string, ComDictionary> com_dic = new Dictionary<string, ComDictionary>();
 
     // BATTERY
-    public string Battery_name;
-    public int battery_volume;
-    
+    private string battery_name;
+    public string Battery_name { get; set; }
 
+    private int battery_volume;
+    public int Battery_volumes { get; set; }
     public DEVICE_BIT() {
 
+
     }
 
-    public string this[int Index]{
-      get
-      {
-        return usb_name[Index];
-
-      }
-      set
-      {
-        usb_name[Index] = value;
-      }
-    }
-
-    //public string this[int index] {
-    //  get => vid[index];
-    //  set => vid[index] = value;
-    //}
-
-    //public string this[int index] {
-    //  get => pid[index];
-    //  set => pid[index] = value;
-    //}
-
-    public int UsbCount {
-      get => usbCount;
-      set => usbCount = value;
-    }
   }
+
 }
+
+public class ComDictionary {
+  private string vid;
+  private string pid;
+
+  public string Vid { get; set; }
+  public string Pid { get; set; }
+
+}
+
+public class USBDictionary {
+  private string vid;
+  public string Vid { get; set; }
+  private string pid;
+  public string Pid { get; set; }
+
+  private string name;
+  public string Name { get; set; }
+
+  
+  
+
+}
+
