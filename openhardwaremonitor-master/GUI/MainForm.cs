@@ -679,9 +679,11 @@ namespace OpenHardwareMonitor.GUI {
 
       //  USB
       getUSB_Info();
+      getUSBController_Info();
 
       // Print
       All_Print();
+
 
 
       SelectQuery selectQuery = new SelectQuery("Win32_Battery");
@@ -714,21 +716,21 @@ namespace OpenHardwareMonitor.GUI {
 
 
 
-
-    private void getUSB_Info() {
-#if false // Win32_USBHub
+#if false
+    public void getUSB_Info(Dictionary<string, USBDictionary> dic) {
       SelectQuery selectQuery = new SelectQuery("Win32_USBHub");
       ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(selectQuery);
 
       USBDictionary d = new USBDictionary();
       string id = null;
       string deviceName = null;
-
+      int count = 1;
       foreach (ManagementObject managementObject in managementObjectSearcher.Get()) {
         if (managementObject.Properties["DeviceID"].Value.ToString() != null) {
           id = managementObject.Properties["DeviceID"].Value.ToString();
 
           Regex reg = new Regex(@"VID_([0-9a-f]+)&PID_([0-9a-f]+)", RegexOptions.IgnoreCase);
+          //Regex reg = new Regex(@"ROOT_HUB30([&0-9a-f]+)", RegexOptions.IgnoreCase);
           MatchCollection resCollection = reg.Matches(id);
 
           foreach (Match mm in resCollection) {
@@ -737,25 +739,45 @@ namespace OpenHardwareMonitor.GUI {
             d.Pid = mm.Groups[2].ToString();
           }
         }
-        if (managementObject.Properties["Name"].Value.ToString() != null) {
-          deviceName = managementObject.Properties["Name"].Value.ToString();
+        if (managementObject.Properties["Caption"].Value.ToString() != null) {
+          d.Name = managementObject.Properties["Caption"].Value.ToString();
+          //d.Name = deviceName;
         }
-        if (d.Vid != null && d.Pid != null && deviceName != null) {
-          if (!(device.usb_dic.ContainsKey(deviceName).Equals(true))) {
-            device.usb_dic.Add(deviceName, d);
-          }
-        } else {
-          Console.WriteLine("null data");
+        if (!(device.usb_dic.ContainsKey(d.Pid).Equals(true))) {
+          device.usb_dic.Add(d.Pid, d);
         }
-#if true
-        int count = 0;
-        foreach (KeyValuePair<string, USBDictionary> tmp in device.usb_dic) {
-          Console.WriteLine("{0} --> {1} , {2} , {3}",++count, tmp.Key, tmp.Value.Vid, tmp.Value.Pid);
-        }
+      }
+
+      foreach (KeyValuePair<string, USBDictionary> tmp in device.usb_dic) {
+        Console.WriteLine("{0} , {1} , {2}", tmp.Key, tmp.Value.Vid, tmp.Value.Name);
+      }
+
+    }
+
+#else
+
+    public void getUSB_Info() { 
+      SelectQuery selectQuery = new SelectQuery("Win32_USBHub");
+      ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(selectQuery);
+
+      string id = null;
+      string deviceName = null;
+
+      foreach (ManagementObject managementObject in managementObjectSearcher.Get()) {
+          id = managementObject.Properties["DeviceID"].Value.ToString();
+          deviceName = managementObject.Properties["Caption"].Value.ToString();
+
+        if (!(device.USB.ContainsKey(id).Equals(true))) {
+          //if (!(device.USB.TryGetValue(id, out deviceName))) { 
+          device.USB.Add(id, deviceName);
+        } else { }
+      }
+    }
+
 #endif
 
-      }
-#else //  Win32_USBController
+#if false
+    private void getUSBController_Info() {
       SelectQuery selectQuery = new SelectQuery("Win32_USBController");
       ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(selectQuery);
 
@@ -791,9 +813,29 @@ namespace OpenHardwareMonitor.GUI {
         Console.WriteLine("{0} , {1} , {2}", tmp.Key, tmp.Value.Vid, tmp.Value.Name);
       }
 #endif
+    }
+#else
+
+    private void getUSBController_Info() {
+      SelectQuery selectQuery = new SelectQuery("Win32_USBController");
+      ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(selectQuery);
+
+      string id = null;
+      string deviceName = null;
+
+      foreach (ManagementObject managementObject in managementObjectSearcher.Get()) {
+
+        id = managementObject.Properties["DeviceID"].Value.ToString();
+        deviceName = managementObject.Properties["Caption"].Value.ToString();
+
+        if (!(device.USB.ContainsKey(id).Equals(true))) {
+          device.USB.Add(id, deviceName);
+        }
+      }
+    }
 
 #endif
-    }
+
 
 
     private void getCom_Info(Node parent)
@@ -924,8 +966,11 @@ namespace OpenHardwareMonitor.GUI {
 
       //  USB
       Console.WriteLine("[USB]");
-      foreach (KeyValuePair<string, USBDictionary> tmp in device.usb_dic) {
-        Console.WriteLine("{0} , {1} , {2}", tmp.Key, tmp.Value.Vid, tmp.Value.Name);
+      USB_Comp.Nodes.Clear();
+      foreach (KeyValuePair<string, string> tmp in device.USB) {
+        //Console.WriteLine("{0} , {1} , {2} KEY : {3}", tmp.Value.Name, tmp.Value.Vid, tmp.Value.Pid, tmp.Key);
+        Console.WriteLine("{0} , {1} , ", tmp.Value, tmp.Key);
+        USB_Comp.Nodes.Add(new Node(tmp.Value));
       }
       Console.WriteLine(Environment.NewLine);
 

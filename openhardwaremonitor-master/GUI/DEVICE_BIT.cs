@@ -16,7 +16,7 @@ using System.Linq;
 
 
 namespace OpenHardwareMonitor.GUI {
-   class DEVICE_BIT {
+   public class DEVICE_BIT {
 
     //  USB
 #if false // old
@@ -27,6 +27,7 @@ namespace OpenHardwareMonitor.GUI {
 #else
     // 딕셔너리
     public Dictionary<string, USBDictionary> usb_dic = new Dictionary<string, USBDictionary>();
+    public Dictionary<string, string> USB = new Dictionary<string, string>();
 #endif
 
     //  HDMI
@@ -61,13 +62,22 @@ public class ComDictionary {
 }
 
 public class USBDictionary {
-  private string vid;
-  public string Vid { get; set; }
+  //private string vid;
+  //public string Vid { get; set; }
   private string pid;
   public string Pid { get; set; }
 
   private string name;
-  public string Name { get; set; }
+  public string Name {
+    get
+    {
+      return name;
+    }
+    set
+    {
+      this.name = value;
+    }
+  }
 
   
   
